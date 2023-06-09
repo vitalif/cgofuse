@@ -37,6 +37,7 @@ type FileSystemHost struct {
 var (
 	hostGuard = sync.Mutex{}
 	hostTable = map[unsafe.Pointer]*FileSystemHost{}
+	RecoverFromPanic = true
 )
 
 func hostHandleNew(host *FileSystemHost) unsafe.Pointer {
@@ -101,6 +102,9 @@ func copyFusetimespecFromCtimespec(dst *Timespec, src *c_fuse_timespec_t) {
 }
 
 func recoverAsErrno(errc0 *c_int) {
+	if !RecoverFromPanic {
+		return
+	}
 	if r := recover(); nil != r {
 		switch e := r.(type) {
 		case Error:
